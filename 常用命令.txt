@@ -1,0 +1,47 @@
+1. 生成pkl结果文件
+python tools/test.py configs/Just/just_r50_fpn_1x_coco.py work_dirs/just_r50_fpn_1x_coco/epoch_12.pth --out result.pkl 
+
+2.评估结果bbox
+python tools/analysis_tools/eval_metric.py configs/Just/just_r50_fpn_1x_coco.py result.pkl --eval bbox 
+混淆矩阵
+python tools/analysis_tools/confusion_matrix.py configs/Just/just_r50_fpn_1x_coco.py result.pkl ./ --show
+
+3.计算FLOPS
+python tools/analysis_tools/get_flops.py configs/Just/just_r50_fpn_1x_coco.py 
+
+4.可视化检测结果
+python tools/test.py configs/Just/just_r50_fpn_1x_coco.py work_dirs/just_r50_fpn_1x_coco/epoch_24.pth --show-dir results-vis （也可以用DetVisGui）
+python tools/test.py configs/Just/just_r50_fpn_1x_coco.py work_dirs/just_r50_fpn_1x_coco/epoch_24.pth --show
+ python DetVisGUI/DetVisGUI.py configs/Just/just_r50_fpn_1x_coco.py --det_file result.pkl --stage test 
+
+5.计算FLOPS
+python tools/analysis_tools/get_flops.py configs/Just/just_r50_fpn_1x_coco.py
+
+计算FPS
+python -m torch.distributed.launch --nproc_per_node=1 --master_port=29500 tools/analysis_tools/benchmark.py 01KD/1CP-EX/TOOD/tood_r50_fpn_1x_coco.py 01KD/1CP-EX/TOOD/epoch_24.pth --launcher pytorch
+
+6.计算average iter 时间
+python tools/analysis_tools/analyze_logs.py cal_train_time 00EX-result/Just/dataV2/20220622_192034.log.json
+
+7.画出结果AP-epoch图 
+python tools/analysis_tools/analyze_logs.py plot_curve 00EX-result/Just/dataV2/20220622_192034.log.json --keys bbox_mAP --legend run1
+python tools/analysis_tools/analyze_logs.py plot_curve 01EX_compare/ATSS/20220627_093702.log.json 01EX_compare/Dynamic-Rcnn/20220626_210357.log.json 01EX_compare/Faster-Rcnn/20220626_223052.log.json 01EX_compare/PAA/20220627_102214.log.json 01EX_compare/RetinaNet/20220626_232800.log.json 01EX_compare/Sparse-Rcnn/20220626_202525.log.json 01EX_compare/TOOD/20220627_082120.log.json 01EX_compare/YOLOF/20220627_112649.log.json --keys bbox_mAP --legend ATSS Dynamic-Rcnn Faster-Rcnn PAA RetinaNet Sparse-Rcnn TOOD YOLOF
+
+8.生成bbox.json文件 用于绘制PR曲线
+python tools/test.py configs/Just/just_r50_fpn_1x_coco.py 00EX-result/Just/dataV2/epoch_24.pth --format-only --options "jsonfile_prefix=./results"
+
+9.mmdetection自带PR曲线
+python tools/coco_error_analysis.py results.bbox.json results --ann=data/coco/annotations/instances_val2017.json
+
+10. PR曲线对比版
+python pr_plot.py --model ATSS Cascade-RCNN Dynamic-RCNN Faster-RCNN GFL RetinaNet Sparse-RCNN TOOD VFNet Ours --model-name atss_r50_fpn_1x_coco cascade_rcnn_r50_fpn_1x_coco dynamic_rcnn_r50_fpn_1x_coco faster_rcnn_r50_fpn_1x_coco gfl_r50_fpn_1x_coco retinanet_r50_fpn_1x_coco sparse_rcnn_r50_fpn_1x_coco tood_r50_fpn_1x_coco vfnet_r50_fpn_1x_coco  Ours --class-id 7
+
+11.数据集可视化-自带
+python tools/misc/browse_dataset.py configs/paa/paa_r50_fpn_1x_coco.py
+
+12 同时可视化检测结果和GT
+python tools/analysis_tools/analyze_results.py configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py configs/faster_rcnn_log_faster_rcnn_r50_fpn_1x_coco/result.pkl show_dir
+
+
+
+
